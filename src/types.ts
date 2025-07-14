@@ -157,3 +157,9 @@ export type AnalogStick = {
   horizontal: string;
   vertical: string;
 };
+
+export type HomeLEDPattern = {
+  intensity: number;
+  fadeDuration: number;
+  duration: number;
+};

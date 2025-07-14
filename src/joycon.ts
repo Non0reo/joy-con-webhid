@@ -7,6 +7,7 @@ import type {
   JoyConLastValues,
   Quaternion,
   CompleteJoyConDataPacket,
+  HomeLEDPattern,
 } from './types.ts';
 import { concatTypedArrays } from './utils.ts';
 
@@ -439,6 +440,84 @@ class JoyCon extends EventTarget {
     }
 
     await this.device.sendReport(outputReportID, new Uint8Array(data));
+  }
+
+  /**
+   * Sets the blinking pattern for the Home LED on the Right Joy-Con device.
+   *
+   * Sends a subcommand to the device to control the Home LED.
+   *
+   * @param miniCycleDuration: Global mini cycle duration. 0-15. 0: off, 1: 8ms, ... , 15: 175ms
+   * @param numCycles: Number of full cycles. 0-15. 0: repeat forever.
+   * @param startIntensity: Initial LED intensity. 0-15.
+   * @param cycleData: Array of {@link HomeLEDpatterns}. The maximum count of the array is 15.
+   */
+  /* Inspired by the JoyConSwift library */
+  async setHomeLEDPattern(
+    miniCycleDuration: number,
+    numCycles: number,
+    startIntensity: number,
+    cycleData: HomeLEDPattern[]
+  ): Promise<void> {
+    const outputReportID = 0x01;
+    const numMiniCycles: number = Math.min(cycleData.length, 15);
+    const data0: number = (numMiniCycles << 4) | miniCycleDuration;
+    const data1: number = (startIntensity << 4) | numCycles;
+    const data: number[] = [data0, data1];
+
+    const defaultPattern: HomeLEDPattern = {
+      intensity: 15,
+      fadeDuration: 0,
+      duration: 0,
+    };
+    const cycles: HomeLEDPattern[] = cycleData.concat(
+      Array(16 - cycleData.length).fill(defaultPattern)
+    );
+    for (let i = 0; i < 8; i++) {
+      const cycle1 = cycles[i * 2];
+      const cycle2 = cycles[i * 2 + 1];
+      const intensity1: number = Math.min(cycle1.intensity, 0x0f);
+      const fadingDuration1: number = Math.min(cycle1.fadeDuration, 0x0f);
+      const duration1: number = Math.min(cycle1.duration, 0x0f);
+      const intensity2: number = Math.min(cycle2.intensity, 0x0f);
+      const fadingDuration2: number = Math.min(cycle2.fadeDuration, 0x0f);
+      const duration2: number = Math.min(cycle2.duration, 0x0f);
+
+      data.push((intensity1 << 4) | intensity2);
+      data.push((fadingDuration1 << 4) | duration1);
+      data.push((fadingDuration2 << 4) | duration2);
+    }
+    data.pop();
+
+    const addedData = [
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x38,
+      ...data,
+    ];
+
+    await this.device.sendReport(outputReportID, new Uint8Array(addedData));
+  }
+
+  /**
+   * Turn `on` or `off` the Home LED on the Right Joy-Con device.
+   *
+   * @param {boolean} on - If true, the LED will be turned on permanently. Turn the LED off otherwise.
+   *
+   */
+  async setHomeLED(on: boolean): Promise<void> {
+    if (on === true) {
+      await this.setHomeLEDPattern(1, 0, 15, []);
+    } else {
+      await this.setHomeLEDPattern(0, 1, 0, []);
+    }
   }
 
   /**
