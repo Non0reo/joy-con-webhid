@@ -465,11 +465,8 @@ class JoyCon extends EventTarget {
 
     const outputReportID = 0x01;
     const numMiniCycles: number = Math.min(cycleData.length, 15);
-    const data0: number =
-      (numMiniCycles << 4) | Math.max(0, Math.min(miniCycleDuration, 15));
-    const data1: number =
-      (Math.max(0, Math.min(startIntensity, 15)) << 4) |
-      Math.max(0, Math.min(numCycles, 15));
+    const data0: number = (numMiniCycles << 4) | clamp(miniCycleDuration, 0, 15);
+    const data1: number = (clamp(startIntensity, 0, 15) << 4) | clamp(numCycles, 0, 15);
     const data: number[] = [data0, data1];
 
     const defaultPattern: HomeLEDPattern = {
