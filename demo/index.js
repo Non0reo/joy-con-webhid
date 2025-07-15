@@ -107,6 +107,11 @@ const visualize = (joyCon, packet) => {
   if (buttons.y || buttons.left) {
     joyCon.rumble(600, 600, 0.5);
   }
+  if (buttons.home) {
+    joyCon.setHomeLED(true);
+  } else {
+    joyCon.setHomeLED(false);
+  }
 
   if (showDebug.checked) {
     const controller = joyCon instanceof JoyConLeft ? debugLeft : debugRight;
