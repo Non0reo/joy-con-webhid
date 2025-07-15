@@ -461,8 +461,11 @@ class JoyCon extends EventTarget {
   ): Promise<void> {
     const outputReportID = 0x01;
     const numMiniCycles: number = Math.min(cycleData.length, 15);
-    const data0: number = (numMiniCycles << 4) | miniCycleDuration;
-    const data1: number = (startIntensity << 4) | numCycles;
+    const data0: number =
+      (numMiniCycles << 4) | Math.max(0, Math.min(miniCycleDuration, 15));
+    const data1: number =
+      (Math.max(0, Math.min(startIntensity, 15)) << 4) |
+      Math.max(0, Math.min(numCycles, 15));
     const data: number[] = [data0, data1];
 
     const defaultPattern: HomeLEDPattern = {
@@ -470,18 +473,24 @@ class JoyCon extends EventTarget {
       fadeDuration: 0,
       duration: 0,
     };
-    const cycles: HomeLEDPattern[] = cycleData.concat(
-      Array(16 - cycleData.length).fill(defaultPattern)
-    );
+    const cycles: HomeLEDPattern[] = cycleData
+      .slice(0, numMiniCycles)
+      .concat(Array(16 - numMiniCycles).fill(defaultPattern));
     for (let i = 0; i < 8; i++) {
       const cycle1 = cycles[i * 2];
       const cycle2 = cycles[i * 2 + 1];
-      const intensity1: number = Math.min(cycle1.intensity, 0x0f);
-      const fadingDuration1: number = Math.min(cycle1.fadeDuration, 0x0f);
-      const duration1: number = Math.min(cycle1.duration, 0x0f);
-      const intensity2: number = Math.min(cycle2.intensity, 0x0f);
-      const fadingDuration2: number = Math.min(cycle2.fadeDuration, 0x0f);
-      const duration2: number = Math.min(cycle2.duration, 0x0f);
+      const intensity1: number = Math.max(0, Math.min(cycle1.intensity, 0x0f));
+      const fadingDuration1: number = Math.max(
+        0,
+        Math.min(cycle1.fadeDuration, 0x0f)
+      );
+      const duration1: number = Math.max(0, Math.min(cycle1.duration, 0x0f));
+      const intensity2: number = Math.max(0, Math.min(cycle2.intensity, 0x0f));
+      const fadingDuration2: number = Math.max(
+        0,
+        Math.min(cycle2.fadeDuration, 0x0f)
+      );
+      const duration2: number = Math.max(0, Math.min(cycle2.duration, 0x0f));
 
       data.push((intensity1 << 4) | intensity2);
       data.push((fadingDuration1 << 4) | duration1);
