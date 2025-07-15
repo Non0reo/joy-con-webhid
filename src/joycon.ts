@@ -459,6 +459,10 @@ class JoyCon extends EventTarget {
     startIntensity: number,
     cycleData: HomeLEDPattern[]
   ): Promise<void> {
+    const clamp = (value: number, min: number, max: number) => {
+      return Math.min(Math.max(value, min), max);
+    };
+
     const outputReportID = 0x01;
     const numMiniCycles: number = Math.min(cycleData.length, 15);
     const data0: number =
@@ -479,18 +483,12 @@ class JoyCon extends EventTarget {
     for (let i = 0; i < 8; i++) {
       const cycle1 = cycles[i * 2];
       const cycle2 = cycles[i * 2 + 1];
-      const intensity1: number = Math.max(0, Math.min(cycle1.intensity, 0x0f));
-      const fadingDuration1: number = Math.max(
-        0,
-        Math.min(cycle1.fadeDuration, 0x0f)
-      );
-      const duration1: number = Math.max(0, Math.min(cycle1.duration, 0x0f));
-      const intensity2: number = Math.max(0, Math.min(cycle2.intensity, 0x0f));
-      const fadingDuration2: number = Math.max(
-        0,
-        Math.min(cycle2.fadeDuration, 0x0f)
-      );
-      const duration2: number = Math.max(0, Math.min(cycle2.duration, 0x0f));
+      const intensity1: number = clamp(cycle1.intensity, 0, 15);
+      const fadingDuration1: number = clamp(cycle1.fadeDuration, 0, 15);
+      const duration1: number = clamp(cycle1.duration, 0, 15);
+      const intensity2: number = clamp(cycle2.intensity, 0, 15);
+      const fadingDuration2: number = clamp(cycle2.fadeDuration, 0, 15);
+      const duration2: number = clamp(cycle2.duration, 0, 15);
 
       data.push((intensity1 << 4) | intensity2);
       data.push((fadingDuration1 << 4) | duration1);
