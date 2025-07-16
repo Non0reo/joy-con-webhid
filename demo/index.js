@@ -108,9 +108,8 @@ const visualize = (joyCon, packet) => {
     joyCon.rumble(600, 600, 0.5);
   }
   if (buttons.home) {
-    joyCon.setHomeLED(true);
-  } else {
-    joyCon.setHomeLED(false);
+    //joyCon.setHomeLED(true);
+    joyCon.setHomeLEDPattern( 5, 1, 15, [] );
   }
 
   if (showDebug.checked) {
