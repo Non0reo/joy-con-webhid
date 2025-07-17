@@ -2,7 +2,7 @@
 
 A [WebHID](https://web.dev/hid) driver for
 [Nintendo Joy-Cons](https://en.wikipedia.org/wiki/Joy-Con) with support for all buttons, analog
-sticks, all LEDs and the device's gyroscope and accelerometer sensors.
+sticks, all LEDs, and the device's gyroscope and accelerometer sensors.
 
 ## Demo
 
@@ -66,7 +66,7 @@ setInterval(async () => {
     await joyCon.enableIMUMode();
     await joyCon.enableVibration();
     // Get information about the connected Joy-Con.
-    console.log(await joyCon.getRequestDeviceInfo());
+    console.log(await joyCon.getDeviceInfo());
     // Rumble.
     await joyCon.rumble(600, 600, 0.5);
     // Turn On and Off the Home LED 3 times
